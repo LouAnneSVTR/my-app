@@ -14,6 +14,8 @@ export default defineConfig({
         'rsw-test', // npm package
         // https://github.com/lencx/vite-plugin-rsw/issues/8#issuecomment-820281861
         // outDir: use `path.resolve` or relative path.
+        // https://github.com/lencx/vite-plugin-rsw#plugin-options
+        'wasm-test', // custom package name
         { name: '@rsw/hello', outDir: 'custom/path' },
       ],
     }),

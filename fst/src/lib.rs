@@ -2,60 +2,96 @@ use std::fmt;
 use std::fmt::Formatter;
 use wasm_bindgen::prelude::*;
 
-// When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
-// allocator.
-#[cfg(feature = "wee_alloc")]
-#[global_allocator]
-static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+use std::os::raw::c_char;
+
+pub type NodeIndex = usize;
+pub type TransitionIndex = usize;
+
 
 #[wasm_bindgen]
-#[derive(Debug)]
-pub struct Blue;
-
-#[wasm_bindgen]
-// The `derive` attribute automatically creates the implementation
-// requiPink to make this `struct` printable with `fmt::Debug`.
-#[derive(Debug)]
-pub struct Orange;
-
-#[wasm_bindgen]
-#[derive(Debug)]
-pub struct Pink;
-
-#[wasm_bindgen]
-#[derive(Debug)]
-struct State<S> {
-    _inner: S
+pub struct FiniteStateMachine {
+    //nameFSM: String,
+    transitions: Vec<Transition>,
+    nodes: Vec<Node>
 }
 
-//Définitions des transitions
 #[wasm_bindgen]
-impl State<Blue> {
-    pub fn new() -> State<Blue> {
-        State { _inner: Blue{} }
+pub struct Node {
+    pub name: i32,
+    outputTransition: Vec<TransitionIndex>,
+    inputTransition: Vec<TransitionIndex>
+}
+
+#[wasm_bindgen]
+pub struct Transition {
+    pub letter: char,
+    outputNodes: NodeIndex,
+    inputNodes: NodeIndex,
+}
+
+#[wasm_bindgen]
+impl FiniteStateMachine {
+    pub fn new() -> FiniteStateMachine {
+        return FiniteStateMachine {
+            // nameFSM,
+            transitions: Vec::new(),
+            nodes: Vec::new()
+        };
+    }
+
+    pub fn addNode(&mut self, name: i32) -> NodeIndex {
+        let index: usize = self.nodes.len();
+        self.nodes.push(Node {
+            name,
+            outputTransition: Vec::new(),
+            inputTransition: Vec::new(),
+        });
+        return index;
+    }
+
+    pub fn addTransition(&mut self, letter: char, inputNodes: NodeIndex, outputNodes: NodeIndex) -> TransitionIndex {
+        let index: usize = self.transitions.len();
+        let new_trans = Transition {
+            letter,
+            outputNodes,
+            inputNodes,
+        };
+        self.transitions.push(new_trans);
+
+        self.nodes[inputNodes].outputTransition.push(index);
+        self.nodes[outputNodes].inputTransition.push(index);
+        return index;
+    }
+
+
+    pub fn existTransition(&mut self, transitionTest: TransitionIndex, c_char: char) -> bool {
+
+        if self.transitions[transitionTest].letter == c_char {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    pub fn displayNode(&self,nodeI: NodeIndex) {
+        for nodeNumber in &self.nodes{
+            print!("{} {}",nodeNumber.name, " ");
+        }
+    }
+
+    pub fn displayTransition(&self) {
+
+        println!();
+        for transitionNumber in &self.transitions{
+            println!("{} {} {} {} {}",self.nodes[transitionNumber.inputNodes].name, "-", transitionNumber.letter, "->", self.nodes[transitionNumber.outputNodes].name);
+        }
+    }
+
+    pub fn displayFSM(&self) {
+        println!("{}","Finite state machine display : ");
+
+        for nodeNumber in &self.nodes{
+            print!("{} {}",nodeNumber.name, " ");
+        }
     }
 }
-
-#[wasm_bindgen]
-impl State<Blue> {
-    pub fn next(self) -> State<Orange> {
-        State { _inner: Orange {} }
-    }
-}
-
-#[wasm_bindgen]
-impl State<Orange> {
-    pub fn next(self) -> State<Pink> {
-        State { _inner: Pink {} }
-    }
-}
-
-#[wasm_bindgen]
-impl State<Pink> {
-    pub fn next(self) -> State<Blue> {
-        State { _inner: Blue {} }
-    }
-}
-
-
-

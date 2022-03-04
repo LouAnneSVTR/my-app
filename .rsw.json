@@ -1,5 +1,8 @@
 {
   "crates": [
-    "wasm-test"
+    "@rsw/hey",
+    "rsw-test",
+    "wasm-test",
+    "@rsw/hello"
   ]
 }
